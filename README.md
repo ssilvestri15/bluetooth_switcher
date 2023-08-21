@@ -64,5 +64,9 @@ This project is licensed under the MIT License, which means you're free to use, 
 ## Contact 📧
 If you have any questions, suggestions, or feedback, feel free to open an issue in the GitHub repository or contact the maintainers directly.
 
-## 
 *Happy Bluetooth switching!*
+
+
+## 
+
+Made with ❤️ by Simone Silvestri
