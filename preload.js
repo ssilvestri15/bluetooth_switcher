@@ -16,7 +16,12 @@ contextBridge.exposeInMainWorld('utils', {
   startBleService: () => startBleService(),
   startSocketServer: (window) => startSocketServer(window),
   messageReceived: (data) => console.log(data),
-  askForConnection: (data) => ipcRenderer.send('askForConnection', data)
+  askForConnection: (data) => ipcRenderer.send('askForConnection', data),
+  getConnectionData: (channel, callback) => {
+    ipcRenderer.on(channel, (_, data) => {
+      callback(data);
+    });
+  },
 })
 
 

@@ -1,16 +1,17 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")
 }
 
 android {
     namespace = "com.silvered.bluetoothswitcher"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.silvered.bluetoothswitcher"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -40,7 +41,7 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -49,13 +50,16 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     //Lottie
-    implementation("com.airbnb.android:lottie:6.0.0")
+    implementation("com.airbnb.android:lottie:6.1.0")
 
     //Zeroconf
     implementation("org.jmdns:jmdns:3.5.8")
     implementation("org.bouncycastle:bcpg-jdk18on:1.75")
 
     implementation("io.socket:socket.io-client:2.1.0")
+
+    //Gson
+    implementation("com.google.code.gson:gson:2.10")
 
 
 }

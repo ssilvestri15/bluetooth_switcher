@@ -18,7 +18,7 @@ function createWindow () {
     }
   })
 
-  win.loadFile('./askconnection/askconnection.html')
+  win.loadFile('./splash_window.html')
 }
 
 ipcMain.on('electron-store-get-data', (event, arg) => {
@@ -29,12 +29,19 @@ ipcMain.on('electron-store-get-data', (event, arg) => {
   event.returnValue = 'Data from main process'; // Replace this with the actual data you want to return.
 });
 
-ipcMain.on('askForConnection', (event, args) => {
-  console.log("Asking for connection: " + args.host + " " + args.mac + "");
-  BrowserWindow.getFocusedWindow().loadFile('./askconnection/askconnection.html')
-});
-
 app.whenReady().then(() => {
+
+  ipcMain.on('askForConnection', (event, args) => {
+    const json = JSON.stringify(args)
+    console.log("Asking for connection: " + json);
+    const window = BrowserWindow.getFocusedWindow();
+    window.loadFile('./askconnection/askconnection.html');
+  
+    // Send data to the renderer process
+    window.webContents.on('did-finish-load', ()=>{
+      window.webContents.send('connectionData', json);
+    })
+  });
 
   ipcMain.on('navigate', (event, arg) => {
     console.log(arg) // prints "ping"

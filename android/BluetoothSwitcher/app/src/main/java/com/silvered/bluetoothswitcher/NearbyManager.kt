@@ -1,7 +1,5 @@
 package com.silvered.bluetoothswitcher
 
-import android.R.attr.data
-import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -28,7 +26,7 @@ data class DeviceInfo(
 class NearbyManager(
     private val context: ComponentActivity,
     private val onDeviceFound: (deviceList: List<DeviceInfo>) -> Unit = {}
-): NsdManager.DiscoveryListener {
+) : NsdManager.DiscoveryListener {
 
     private val TAG = "NearbyManager"
 
@@ -37,29 +35,37 @@ class NearbyManager(
     private val SERVICE_TYPE = "_ble._tcp" // Replace this with your desired service type
 
     private val deviceList = mutableListOf<DeviceInfo>()
+    private var isDiscovering = false
 
     fun startDiscovery() {
-        nsdManager.discoverServices(
-            SERVICE_TYPE,
-            NsdManager.PROTOCOL_DNS_SD,
-            this
-        )
+        if (!isDiscovering) {
+            nsdManager.discoverServices(
+                SERVICE_TYPE,
+                NsdManager.PROTOCOL_DNS_SD,
+                this
+            )
+            isDiscovering = true
+        }
     }
 
     fun stopDiscovery() {
-        nsdManager.stopServiceDiscovery(this)
+        if (isDiscovering) {
+            nsdManager.stopServiceDiscovery(this)
+            isDiscovering = false
+        }
     }
 
     override fun onDiscoveryStarted(serviceType: String) {
         // Discovery started
         Log.d(TAG, "onDiscoveryStarted: $serviceType")
+        isDiscovering = true
     }
 
     override fun onServiceFound(serviceInfo: NsdServiceInfo) {
         // Service found, you can access its details through serviceInfo object
         if (serviceInfo != null) {
             Log.d(TAG, "onServiceFound: $serviceInfo")
-            nsdManager.resolveService(serviceInfo, object: NsdManager.ResolveListener {
+            nsdManager.resolveService(serviceInfo, object : NsdManager.ResolveListener {
                 override fun onResolveFailed(p0: NsdServiceInfo?, p1: Int) {
                     Log.d(TAG, "onResolveFailed: $p0, $p1")
                 }
@@ -97,6 +103,7 @@ class NearbyManager(
     override fun onDiscoveryStopped(serviceType: String) {
         // Discovery stopped
         Log.d(TAG, "onDiscoveryStopped: $serviceType")
+        isDiscovering = false
     }
 
     override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
@@ -148,7 +155,6 @@ class NearbyManager(
             return ""
         }
     }
-
 
 
 }

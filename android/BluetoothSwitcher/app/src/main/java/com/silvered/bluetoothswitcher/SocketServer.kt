@@ -30,6 +30,7 @@ class SocketServer private constructor() {
         onMessageReceived: (message: String) -> Unit,
     ) {
         try {
+            Log.d("SocketIO", "Connecting to server: $ip:$port")
             socket = IO.socket("http://$ip:$port")
 
             // Set up event listeners

@@ -3,16 +3,17 @@
 <head>
   <title>Bluetooth Switcher</title>
   <link rel="stylesheet" type="text/css" href="askconnection.css">
+  <script src="askconnection.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="half left">
-          <h1 class="title">Title</h1>
-          <h2 class="subtitle">Subtitle</h2>
-          <p class="text">Some text goes here.</p>
+          <h1 class="title">Connessione con</h1>
+          <h2 class="subtitle" id="device_name">Subtitle</h2>
+          <p class="text">Questo dispositivo ha richiesto di connettersi al tuo pc.</p>
           <div class="button-container">
-            <button class="button">Button 1</button>
-            <button class="button">Button 2</button>
+            <button class="button approve" id="btn_approve">Approva</button>
+            <button class="button deny" id="btn_deny">Rifiuta</button>
           </div>
         </div>
         <div class="half right">
