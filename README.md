@@ -9,7 +9,8 @@ Bluetooth Switcher is a cross-platform solution for seamlessly sharing Bluetooth
 - ✅ Build zeroconf discover (Maybe can be replaced with BLE Discover)
 - ✅  Create a socket server to ensure data exchange between clients  
 - [ ]  Encrypt data 🔒
-- [ ]  Approve Android connection at PC and generate token 📲💻
+- ✅  Approve Android connection at PC
+- [ ]  Generate token 📲💻
 - [ ]  Show connected Android devices (Windows Client) 💻
 - [ ]  Show connected PC devices (Android) 📱
 - [ ]  Show connected Bluetooth devices (Windows & Android) 🖧
