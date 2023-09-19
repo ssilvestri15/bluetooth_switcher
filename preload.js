@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('utils', {
       callback(data);
     });
   },
+  closeWindow: (id) => ipcRenderer.send('closeWindow', id)
 })
 
 

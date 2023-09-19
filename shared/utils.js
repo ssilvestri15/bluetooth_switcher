@@ -234,6 +234,8 @@ function handleAuth(window, data) {
   console.log("User authenticated");
 }
 
+
+
 function askForConnection(window, host, mac) {
   
 }

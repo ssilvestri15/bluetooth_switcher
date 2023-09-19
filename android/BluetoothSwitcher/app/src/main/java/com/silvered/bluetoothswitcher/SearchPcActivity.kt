@@ -104,17 +104,15 @@ class SearchPcActivity : AppCompatActivity() {
             port = deviceInfo.port,
             onConnected = {
                 Log.d("SearchPcActivity", "Connected to PC")
-                val token =
-                    getSharedPreferences("token", Context.MODE_PRIVATE).getString("token", "") ?: ""
+                val shared = getSharedPreferences("info", MODE_PRIVATE)
+                val token = shared.getString("token", "") ?: ""
+                val device_id = shared.getString("device_id", "") ?: ""
                 val connectionRequestModel = ConnectionRequestModel(
                     host = Settings.Global.getString(
                         contentResolver,
                         Settings.Global.DEVICE_NAME
                     ),
-                    mac = "${Settings.Global.getString(
-                        contentResolver,
-                        Settings.Global.DEVICE_NAME
-                    )}_MAC",
+                    mac = device_id,
                     token = token,
                     type = "auth"
                 )
