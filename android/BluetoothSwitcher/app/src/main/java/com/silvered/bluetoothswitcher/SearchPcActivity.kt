@@ -53,29 +53,29 @@ class SearchPcActivity : AppCompatActivity() {
         nearbyManager = NearbyManager(this) { deviceList ->
 
             if (deviceList.isEmpty()) {
-                CoroutineScope(Dispatchers.Main).launch {
+                runOnUiThread {
                     binding.devicesFoundRv.visibility = View.GONE
                 }
             } else {
-                CoroutineScope(Dispatchers.Main).launch {
+                runOnUiThread {
                     binding.devicesFoundRv.visibility = View.VISIBLE
-                }
-                binding.devicesFoundRv.adapter = DeviceListAdapter(deviceList) { deviceInfo ->
-                    nearbyManager.stopDiscovery()
-                    CoroutineScope(Dispatchers.Main).launch {
-                        binding.linearLayout2.visibility = View.GONE
-                        binding.scanAnimation.pauseAnimation()
-                        binding.pcDetail.pcName.text = deviceInfo.host
-                        binding.pcDetail.root.visibility = View.VISIBLE
-                        binding.waitingText.visibility = View.VISIBLE
-                        //rotate star infinitely
-                        val rotate =
-                            ObjectAnimator.ofFloat(binding.pcDetail.star, View.ROTATION, 0f, 360f)
-                        rotate.duration = 5000
-                        rotate.repeatCount = ObjectAnimator.INFINITE
-                        rotate.start()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            connectToPc(deviceInfo)
+                    binding.devicesFoundRv.adapter = DeviceListAdapter(deviceList) { deviceInfo ->
+                        nearbyManager.stopDiscovery()
+                        runOnUiThread {
+                            binding.linearLayout2.visibility = View.GONE
+                            binding.scanAnimation.pauseAnimation()
+                            binding.pcDetail.pcName.text = deviceInfo.host
+                            binding.pcDetail.root.visibility = View.VISIBLE
+                            binding.waitingText.visibility = View.VISIBLE
+                            //rotate star infinitely
+                            val rotate =
+                                ObjectAnimator.ofFloat(binding.pcDetail.star, View.ROTATION, 0f, 360f)
+                            rotate.duration = 5000
+                            rotate.repeatCount = ObjectAnimator.INFINITE
+                            rotate.start()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                connectToPc(deviceInfo)
+                            }
                         }
                     }
                 }
@@ -99,34 +99,41 @@ class SearchPcActivity : AppCompatActivity() {
     private suspend fun connectToPc(deviceInfo: DeviceInfo) = withContext(Dispatchers.IO) {
         Log.d("SearchPcActivity", "Connecting to PC")
         val socketServer = SocketServer.getInstance()
-        socketServer.startSocketConnection(
-            ip = deviceInfo.ip,
-            port = deviceInfo.port,
-            onConnected = {
-                Log.d("SearchPcActivity", "Connected to PC")
-                val shared = getSharedPreferences("info", MODE_PRIVATE)
-                val token = shared.getString("token", "") ?: ""
-                val device_id = shared.getString("device_id", "") ?: ""
-                val connectionRequestModel = ConnectionRequestModel(
-                    host = Settings.Global.getString(
-                        contentResolver,
-                        Settings.Global.DEVICE_NAME
-                    ),
-                    mac = device_id,
-                    token = token,
-                    type = "auth"
-                )
-                Log.d("SearchPcActivity", "Sending message: $connectionRequestModel")
-                val gson = Gson()
-                socketServer.sendMessage(gson.toJson(connectionRequestModel))
-            },
-            onDisconnected = {
-                Log.d("SearchPcActivity", "onDisconnected")
-            },
-            onMessageReceived = { message ->
-                Log.d("SearchPcActivity", "Message received: $message")
-            }
-        )
+        try {
+            socketServer.startSocketConnection(
+                ip = deviceInfo.ip,
+                port = deviceInfo.port,
+                onConnected = {
+                    Log.d("SearchPcActivity", "Connected to PC")
+                    val shared = getSharedPreferences("info", MODE_PRIVATE)
+                    val token = shared.getString("token", "") ?: ""
+                    val device_id = shared.getString("device_id", "") ?: ""
+                    val connectionRequestModel = ConnectionRequestModel(
+                        host = Settings.Global.getString(
+                            contentResolver,
+                            Settings.Global.DEVICE_NAME
+                        ),
+                        mac = device_id,
+                        token = token,
+                        type = "auth"
+                    )
+                    Log.d("SearchPcActivity", "Sending message: $connectionRequestModel")
+                    socketServer.sendMessage(Gson().toJson(connectionRequestModel)) { error ->
+                        Log.e("SearchPcActivity", "Error sending message: ${error.printStackTrace()}")
+                    }
+                },
+                onMessageReceived = { message ->
+                    Log.d("SearchPcActivity", "Message received: $message")
+                },
+                onError = { error ->
+                    Log.e("SearchPcActivity", "Error connecting to PC: ${error.printStackTrace()}")
+                }
+            )
+        } catch (e: Exception) {
+            Log.e("SearchPcActivity", "Error connecting to PC: ${e.printStackTrace()}")
+            return@withContext
+        }
+
     }
 
 }

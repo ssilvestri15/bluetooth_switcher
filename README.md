@@ -1,7 +1,7 @@
 Prototype Images
 # Bluetooth Switcher
 
-Bluetooth Switcher is a cross-platform solution for seamlessly sharing Bluetooth devices between Windows PCs and Android smartphones. This project consists of a Windows client application built using Electron and an Android app developed using Kotlin. With Bluetooth Switcher, you can easily switch and manage your Bluetooth devices without the hassle of repetitive pairing and unpairing.
+Bluetooth Switcher is a cross-platform solution for seamlessly sharing Bluetooth devices between Windows PCs and Android smartphones. This project consists of a Windows client application built using Compose Desktop and an Android app developed using Kotlin. With Bluetooth Switcher, you can easily switch and manage your Bluetooth devices without the hassle of repetitive pairing and unpairing.
 
 ## Roadmap
 

@@ -5,6 +5,7 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
 import androidx.activity.ComponentActivity
+import com.google.gson.Gson
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -72,14 +73,12 @@ class NearbyManager(
 
                 override fun onServiceResolved(service: NsdServiceInfo?) {
                     if (service != null) {
-                        val map = parseNsdTxtRecordToMap(service.attributes)
-                        Log.d(TAG, "onServiceResolved: $map")
-                        val host = map.getString("host") ?: ""
-                        val ip = map.getString("ip") ?: ""
-                        val port = map.getInt("port") ?: -1
+                        val string = "$service"
+                        val json = "{${string.substringAfter("{").substringBefore("}")}}"
+                        val deviceInfo = Gson().fromJson(json, DeviceInfo::class.java)
 
-                        if (host != "" && ip != "" && port != -1) {
-                            deviceList.add(DeviceInfo(service.serviceName, host, ip, port))
+                        if (deviceInfo != null && deviceInfo.host != null && deviceInfo.ip != null && deviceInfo.port != null) {
+                            deviceList.add(DeviceInfo(service.serviceName, deviceInfo.host, deviceInfo.ip, deviceInfo.port))
                             Log.d(TAG, "onServiceResolved: $deviceList")
                             onDeviceFound(deviceList)
                         }
