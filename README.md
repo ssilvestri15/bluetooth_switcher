@@ -10,9 +10,9 @@ Bluetooth Switcher is a cross-platform solution for seamlessly sharing Bluetooth
 - ✅  Create a socket server to ensure data exchange between clients  
 - [ ]  Encrypt data 🔒
 - ✅  Approve Android connection at PC
-- [ ]  Generate token 📲💻
-- [ ]  Show connected Android devices (Windows Client) 💻
-- [ ]  Show connected PC devices (Android) 📱
+- ✅  Generate token 📲💻
+- ✅  Show connected Android devices (Windows Client) 💻
+- ✅  Show connected PC devices (Android) 📱
 - [ ]  Show connected Bluetooth devices (Windows & Android) 🖧
 - [ ]  Observe if some media is reproduced (Windows & Android) ▶️🔊
 - [ ]  Notification 📢
