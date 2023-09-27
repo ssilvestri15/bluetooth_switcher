@@ -1,13 +1,15 @@
-package com.silvered.bluetoothswitcher
+package com.silvered.bluetoothswitcher.onBoarding
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import androidx.core.app.ActivityOptionsCompat
+import com.silvered.bluetoothswitcher.SearchPcActivity
 import com.silvered.bluetoothswitcher.databinding.ActivityMainBinding
+import com.silvered.bluetoothswitcher.sha256
 
-class MainActivity : AppCompatActivity() {
+class OnBoardingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 

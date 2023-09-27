@@ -9,6 +9,7 @@ import utils.KeyManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.InetAddress
+import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import javax.jmdns.JmDNS
@@ -47,13 +48,37 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
 
     }
 
-    private val ipAddress = InetAddress.getLocalHost()
+    private val ipAddress = getLocalhostIP()
     private val jmdns = JmDNS.create(ipAddress)
     private val serviceName = "BLE"
     private val serviceType = "ble"
 
     val clients = mutableMapOf<String, ConnectedDevice>()
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    private fun getLocalhostIP(): InetAddress {
+
+        try {
+            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+
+            while (networkInterfaces.hasMoreElements()) {
+                val networkInterface = networkInterfaces.nextElement()
+                val inetAddresses = networkInterface.inetAddresses
+
+                while (inetAddresses.hasMoreElements()) {
+                    val inetAddress = inetAddresses.nextElement()
+                    val ipAddress = inetAddress.hostAddress
+
+                    if (ipAddress.startsWith("192.168")) {
+                        return inetAddress
+                    }
+                }
+            }
+            return InetAddress.getLocalHost()
+        } catch (e: Exception) {
+            return InetAddress.getLocalHost()
+        }
+    }
 
     fun startAdvertising() {
         try {
@@ -95,7 +120,8 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
         }
     }
 
-    data class ConnectionRequest(val host: String, val mac: String, val token: String, val type:String)
+    data class ConnectionRequest(val host: String, val mac: String, val token: String, val type: String)
+
     private suspend fun handleMessage(clientSocket: Socket) = withContext(Dispatchers.IO) {
         try {
             println("Client connected: ${clientSocket.inetAddress.hostAddress}")
@@ -127,7 +153,7 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
     private fun handleDeviceConnection(clientSocket: Socket, connectionRequest: ConnectionRequest) {
         try {
 
-            if (connectionRequest.type.isNullOrEmpty()){
+            if (connectionRequest.type.isNullOrEmpty()) {
                 println("Type is null or empty")
                 return
             }
@@ -137,8 +163,10 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
                 "auth" -> {
                     handleAuth(clientSocket, connectionRequest)
                 }
+
                 "message" -> {
                 }
+
                 else -> {
                     println("Type is not valid")
                     return
@@ -153,18 +181,18 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
 
     private fun handleAuth(clientSocket: Socket, connectionRequest: ConnectionRequest) {
 
-        if (connectionRequest.mac.isNullOrEmpty() || connectionRequest.host.isNullOrEmpty()){
+        if (connectionRequest.mac.isNullOrEmpty() || connectionRequest.host.isNullOrEmpty()) {
             println("Null or empty")
             return
         }
 
-        if (!checkIfUserExist(connectionRequest.mac)){
+        if (!checkIfUserExist(connectionRequest.mac)) {
             println("User not exist")
             askForConnection(clientSocket, connectionRequest)
             return
         }
 
-        if (connectionRequest.token.isNullOrEmpty()){
+        if (connectionRequest.token.isNullOrEmpty()) {
             println("Token is null or empty")
             return
         }
@@ -173,7 +201,7 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
         json.addProperty("host", connectionRequest.host)
         json.addProperty("mac", connectionRequest.mac)
         val verified = verifyToken(json.toString(), connectionRequest.token)
-        if (verified.isNullOrEmpty()){
+        if (verified.isNullOrEmpty()) {
             println("Token is not valid")
             return
         }
@@ -228,16 +256,39 @@ class NearbyManager private constructor(var listener: NearbyManagerListener) {
             json.addProperty("mac", connectionRequest.mac)
             val token = generateJwtToken(json.toString())
 
-            if (token.isNullOrEmpty()){
+            if (token.isNullOrEmpty()) {
                 println("Token is null or empty")
                 return
             }
 
-            val connectedDevice = ConnectedDevice(connectionRequest.host, connectionRequest.mac, token, connectionSocket)
+            val connectedDevice =
+                ConnectedDevice(connectionRequest.host, connectionRequest.mac, token, connectionSocket)
             //save mac
             clients[connectedDevice.mac] = connectedDevice
-
+            val json2 = JsonObject()
+            json2.addProperty("token", token)
+            json2.addProperty("host", ipAddress.hostName)
+            json2.addProperty("ip", ipAddress.hostAddress)
+            json2.addProperty("port", 1977)
+            sendMessage(connectedDevice.mac, message = json2.toString())
             listener.onDeviceApproved()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun sendMessage(mac: String, message: String) {
+        try {
+            val connectedDevice = clients[mac]
+
+            if (connectedDevice == null) {
+                println("Device not found")
+                return
+            }
+
+            val outputStream = connectedDevice.socket.getOutputStream()
+            outputStream.write("$message\n".toByteArray())
+            outputStream.flush()
         } catch (e: Exception) {
             e.printStackTrace()
         }

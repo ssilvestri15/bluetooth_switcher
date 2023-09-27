@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.silvered.bluetoothswitcher.databinding.ActivitySearchPcAcivityBinding
+import com.silvered.bluetoothswitcher.home.HomeActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -69,7 +70,12 @@ class SearchPcActivity : AppCompatActivity() {
                             binding.waitingText.visibility = View.VISIBLE
                             //rotate star infinitely
                             val rotate =
-                                ObjectAnimator.ofFloat(binding.pcDetail.star, View.ROTATION, 0f, 360f)
+                                ObjectAnimator.ofFloat(
+                                    binding.pcDetail.star,
+                                    View.ROTATION,
+                                    0f,
+                                    360f
+                                )
                             rotate.duration = 5000
                             rotate.repeatCount = ObjectAnimator.INFINITE
                             rotate.start()
@@ -119,11 +125,37 @@ class SearchPcActivity : AppCompatActivity() {
                     )
                     Log.d("SearchPcActivity", "Sending message: $connectionRequestModel")
                     socketServer.sendMessage(Gson().toJson(connectionRequestModel)) { error ->
-                        Log.e("SearchPcActivity", "Error sending message: ${error.printStackTrace()}")
+                        Log.e(
+                            "SearchPcActivity",
+                            "Error sending message: ${error.printStackTrace()}"
+                        )
                     }
+
                 },
                 onMessageReceived = { message ->
-                    Log.d("SearchPcActivity", "Message received: $message")
+                    try {
+                        if (!(message.startsWith("{") && message.endsWith("}")))
+                            return@startSocketConnection
+
+                        val deviceToStore = Gson().fromJson(message, DeviceInfo::class.java)
+                        val sharedPreferences = getSharedPreferences("info", MODE_PRIVATE)
+                        socketServer.saveDevice(
+                            sharedPreferences = sharedPreferences,
+                            deviceJson = Gson().toJson(deviceToStore)
+                        ) { areDateSavedSuccessfully ->
+                            if (areDateSavedSuccessfully) {
+                                val intent = Intent(this@SearchPcActivity, HomeActivity::class.java)
+                                //reset the activity stack
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                Log.e("SearchPcActivity", "Error saving device")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SearchPcActivity", "Error parsing message: ${e.printStackTrace()}")
+                    }
                 },
                 onError = { error ->
                     Log.e("SearchPcActivity", "Error connecting to PC: ${error.printStackTrace()}")

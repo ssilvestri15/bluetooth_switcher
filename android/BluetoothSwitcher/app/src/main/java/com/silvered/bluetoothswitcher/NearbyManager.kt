@@ -22,6 +22,7 @@ data class DeviceInfo(
     val host: String,
     val ip: String,
     val port: Int,
+    var selected: Boolean = false
 )
 
 class NearbyManager(
@@ -37,6 +38,8 @@ class NearbyManager(
 
     private val deviceList = mutableListOf<DeviceInfo>()
     private var isDiscovering = false
+
+    val connectedDeviceList = mutableListOf<DeviceInfo>()
 
     fun startDiscovery() {
         if (!isDiscovering) {
